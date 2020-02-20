@@ -101,11 +101,15 @@ public class CubeAnalyzer : MonoBehaviour
         FillUpPathsListWithFirst9Actions(actionPaths);
         var startChaosMeasure = MeasureChaos(cube);
         var currentPathCount = 0;
+        var totalPathCountsForIteratingDeepSearch = 0;
+        for (var i = 1; i <= depthSearchLimit; i++)
+            totalPathCountsForIteratingDeepSearch += (int)Mathf.Pow(18, i);
+
         while (search && MeasureChaos(cube) > 0 && currentDepth < depthSearchLimit)
         {
             if(!pause)
             {
-                for(var  i = 0; i < Mathf.Pow(27, currentDepth + 1); i++)
+                for(var  i = 0; i < Mathf.Pow(18, currentDepth + 1); i++)
                 {
                     if (!success)
                     {
@@ -146,7 +150,7 @@ public class CubeAnalyzer : MonoBehaviour
                         }
                         currentPathCount++;
                         var timePerPath = (DateTime.Now - start).TotalSeconds / currentPathCount;
-                        etaText.text = TimeSpan.FromSeconds(timePerPath * (Mathf.Pow(27, depthSearchLimit) - currentPathCount)).ToString();
+                        etaText.text = TimeSpan.FromSeconds(timePerPath * (totalPathCountsForIteratingDeepSearch - currentPathCount)).ToString();
                         yield return new WaitForEndOfFrame();
                         if(!success) RevertPath(cube, actionPaths[i]);
                     }
@@ -210,7 +214,7 @@ public class CubeAnalyzer : MonoBehaviour
         var startPathCount = pathes.Count;
         for(var i = 0; i < startPathCount; i++)
         {
-            for(var j = 0; j < 27; j++)
+            for(var j = 0; j < 18; j++)
             {
                 if (j == 0)
                 {
@@ -236,14 +240,11 @@ public class CubeAnalyzer : MonoBehaviour
 
     void FillUpPathsListWithFirst9Actions(List<Path> listToFil)
     {
-        for(var i = 0; i < 9; i++)
+        for (var i = 0; i < 18; i++)
         {
-            for(var j = 1; j < 4; j++)
-            {
-                var firstAction = new Action((RotationCells)i, j);
-                var firstActionList = new Path(firstAction);
-                listToFil.Add(firstActionList);
-            }
+            var firstAction = GetActionByIndex(i);
+            var firstActionList = new Path(firstAction);
+            listToFil.Add(firstActionList);
         }
     }
 
@@ -288,30 +289,30 @@ public class CubeAnalyzer : MonoBehaviour
         if (actionIndex == 0) return new Action(RotationCells.Left, 1);
         else if (actionIndex == 1) return new Action(RotationCells.Left, 2);
         else if (actionIndex == 2) return new Action(RotationCells.Left, 3);
-        else if (actionIndex == 3) return new Action(RotationCells.MiddleParralelSide, 1);
-        else if (actionIndex == 4) return new Action(RotationCells.MiddleParralelSide, 2);
-        else if (actionIndex == 5) return new Action(RotationCells.MiddleParralelSide, 3);
-        else if (actionIndex == 6) return new Action(RotationCells.Right, 1);
-        else if (actionIndex == 7) return new Action(RotationCells.Right, 2);
-        else if (actionIndex == 8) return new Action(RotationCells.Right, 3);
-        else if (actionIndex == 9) return new Action(RotationCells.Back, 1);
-        else if (actionIndex == 10) return new Action(RotationCells.Back, 2);
-        else if (actionIndex == 11) return new Action(RotationCells.Back, 3);
-        else if (actionIndex == 12) return new Action(RotationCells.MiddleParallelMe, 1);
-        else if (actionIndex == 13) return new Action(RotationCells.MiddleParallelMe, 2);
-        else if (actionIndex == 14) return new Action(RotationCells.MiddleParallelMe, 3);
-        else if (actionIndex == 15) return new Action(RotationCells.Front, 1);
-        else if (actionIndex == 16) return new Action(RotationCells.Front, 2);
-        else if (actionIndex == 17) return new Action(RotationCells.Front, 3);
-        else if (actionIndex == 18) return new Action(RotationCells.Top, 1);
-        else if (actionIndex == 19) return new Action(RotationCells.Top, 2);
-        else if (actionIndex == 20) return new Action(RotationCells.Top, 3);
-        else if (actionIndex == 21) return new Action(RotationCells.MiddleParrallelFloor, 1);
-        else if (actionIndex == 22) return new Action(RotationCells.MiddleParrallelFloor, 2);
-        else if (actionIndex == 23) return new Action(RotationCells.MiddleParrallelFloor, 3);
-        else if (actionIndex == 24) return new Action(RotationCells.Bottom, 1);
-        else if (actionIndex == 25) return new Action(RotationCells.Bottom, 2);
-        else if (actionIndex == 26) return new Action(RotationCells.Bottom, 3);
+        //else if (actionIndex == 3) return new Action(RotationCells.MiddleParralelSide, 1);
+        //else if (actionIndex == 4) return new Action(RotationCells.MiddleParralelSide, 2);
+        //else if (actionIndex == 5) return new Action(RotationCells.MiddleParralelSide, 3);
+        else if (actionIndex == 3) return new Action(RotationCells.Right, 1);
+        else if (actionIndex == 4) return new Action(RotationCells.Right, 2);
+        else if (actionIndex == 5) return new Action(RotationCells.Right, 3);
+        else if (actionIndex == 6) return new Action(RotationCells.Back, 1);
+        else if (actionIndex == 7) return new Action(RotationCells.Back, 2);
+        else if (actionIndex == 8) return new Action(RotationCells.Back, 3);
+        //else if (actionIndex == 12) return new Action(RotationCells.MiddleParallelMe, 1);
+        //else if (actionIndex == 13) return new Action(RotationCells.MiddleParallelMe, 2);
+        //else if (actionIndex == 14) return new Action(RotationCells.MiddleParallelMe, 3);
+        else if (actionIndex == 9) return new Action(RotationCells.Front, 1);
+        else if (actionIndex == 10) return new Action(RotationCells.Front, 2);
+        else if (actionIndex == 11) return new Action(RotationCells.Front, 3);
+        else if (actionIndex == 12) return new Action(RotationCells.Top, 1);
+        else if (actionIndex == 13) return new Action(RotationCells.Top, 2);
+        else if (actionIndex == 14) return new Action(RotationCells.Top, 3);
+        //else if (actionIndex == 21) return new Action(RotationCells.MiddleParrallelFloor, 1);
+        //else if (actionIndex == 22) return new Action(RotationCells.MiddleParrallelFloor, 2);
+        //else if (actionIndex == 23) return new Action(RotationCells.MiddleParrallelFloor, 3);
+        else if (actionIndex == 15) return new Action(RotationCells.Bottom, 1);
+        else if (actionIndex == 16) return new Action(RotationCells.Bottom, 2);
+        else if (actionIndex == 17) return new Action(RotationCells.Bottom, 3);
         return new Action(RotationCells.Left, 0);
     }
 

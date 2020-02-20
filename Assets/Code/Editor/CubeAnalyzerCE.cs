@@ -31,15 +31,15 @@ public class CubeAnalyzerCE : Editor
         if (GUILayout.Button("Set current cube as start cube")) targetScript.SetCurrentCubeAsStartCube();
         GUILayout.Space(20);
         if (GUILayout.Button("Rotate Left")) targetScript.RotateAny(RotationCells.Left);
-        if (GUILayout.Button("Rotate Middle")) targetScript.RotateAny(RotationCells.MiddleParralelSide);
+        //if (GUILayout.Button("Rotate Middle")) targetScript.RotateAny(RotationCells.MiddleParralelSide);
         if (GUILayout.Button("Rotate Right")) targetScript.RotateAny(RotationCells.Right);
 
         if (GUILayout.Button("Rotate Back")) targetScript.RotateAny(RotationCells.Back);
-        if (GUILayout.Button("Rotate Middle")) targetScript.RotateAny(RotationCells.MiddleParallelMe);
+        //if (GUILayout.Button("Rotate Middle")) targetScript.RotateAny(RotationCells.MiddleParallelMe);
         if (GUILayout.Button("Rotate Front")) targetScript.RotateAny(RotationCells.Front);
 
         if (GUILayout.Button("Rotate Top")) targetScript.RotateAny(RotationCells.Top);
-        if (GUILayout.Button("Rotate Middle")) targetScript.RotateAny(RotationCells.MiddleParrallelFloor);
+        //if (GUILayout.Button("Rotate Middle")) targetScript.RotateAny(RotationCells.MiddleParrallelFloor);
         if (GUILayout.Button("Rotate Bottom")) targetScript.RotateAny(RotationCells.Bottom);
         GUILayout.Space(20);
         GUILayout.Space(20);
