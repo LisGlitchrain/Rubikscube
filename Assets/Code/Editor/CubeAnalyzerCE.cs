@@ -28,6 +28,8 @@ public class CubeAnalyzerCE : Editor
         //if (GUILayout.Button("Rotate Middle")) targetScript.RotateTopMiddleBottom(1);
         //if (GUILayout.Button("Rotate Bottom")) targetScript.RotateTopMiddleBottom(2);
 
+        if (GUILayout.Button("Set current cube as start cube")) targetScript.SetCurrentCubeAsStartCube();
+        GUILayout.Space(20);
         if (GUILayout.Button("Rotate Left")) targetScript.RotateAny(RotationCells.Left);
         if (GUILayout.Button("Rotate Middle")) targetScript.RotateAny(RotationCells.MiddleParralelSide);
         if (GUILayout.Button("Rotate Right")) targetScript.RotateAny(RotationCells.Right);
@@ -49,14 +51,36 @@ public class CubeAnalyzerCE : Editor
         GUILayout.Space(20);
         GUILayout.Space(20);
         if (GUILayout.Button("Measure chaos")) targetScript.MeasureChaos(targetScript.cube);
-        GUILayout.Label(targetScript.actions.Count.ToString());
-        foreach (var action in targetScript.actions)
-            ShowActionsList(action.Item1, action.Item2);
+        GUILayout.Label(targetScript.choosenActions.actions.Count.ToString());
+
+        GUILayout.Label("Previously applied actions:");
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("#");
+        GUILayout.Label("Roration");
+        GUILayout.Label("Right angles");
+        GUILayout.Label("Chaos");
+        GUILayout.EndHorizontal();
+        for (var i = 0; i < targetScript.previouslyAppliedPathes.actions.Count; i++)
+            ShowActionsList(targetScript.previouslyAppliedPathes.actions[i], i);
+
+        GUILayout.Label("Solution path");
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("#");
+        GUILayout.Label("Roration");
+        GUILayout.Label("Right angles");
+        GUILayout.Label("Chaos");
+        GUILayout.EndHorizontal();
+        for (var i = 0; i < targetScript.choosenActions.actions.Count; i++)
+            ShowActionsList(targetScript.choosenActions.actions[i], i);
     }
 
-    void ShowActionsList(RotationCells rotationCells, int rightAngleCount)
+    void ShowActionsList(Action action, int index)
     {
-        GUILayout.Label(rotationCells.ToString());
-        GUILayout.Label(rightAngleCount.ToString());
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(index.ToString());
+        GUILayout.Label(action.Rotation.ToString());
+        GUILayout.Label(action.RightAngleCount.ToString());
+        GUILayout.Label(action.ChaosMeasureOfAppliedRotation.ToString());
+        GUILayout.EndHorizontal();
     }
 }

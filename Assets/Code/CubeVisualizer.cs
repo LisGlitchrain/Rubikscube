@@ -5,26 +5,34 @@ using UnityEngine.UI;
 
 public class CubeVisualizer : MonoBehaviour
 {
-    public Image[] imagesToGet;
-    public Image[,,] cellImages;
+    public Image[] imagesToGetCurrentCube;
+    public Image[] imagesToGetStartCube;
+    public Image[,,] cellImagesCurrentCube;
+    public Image[,,] cellImagesStartCube;
     public CubeModel cube;
+    public CubeModel startCube;
     public Color orange;
+    public Color red;
 
     // Start is called before the first frame update
-    public void Init(CubeModel cubeModel)
+    public void Init(CubeModel cubeModel, CubeModel startCubeModel)
     {
         cube = cubeModel;
-        cellImages = new Image[6,3,3];
+        startCube = startCubeModel;
+        cellImagesCurrentCube = new Image[6,3,3];
+        cellImagesStartCube = new Image[6, 3, 3];
         //orange = new Color(255,120, 0);
-        SetImagesToCells();
+        SetImagesToCells(cellImagesCurrentCube, imagesToGetCurrentCube);
+        SetImagesToCells(cellImagesStartCube, imagesToGetStartCube);
     }
 
     private void Update()
     {
-        UpdateColors();
+        UpdateColors(cube, cellImagesCurrentCube);
+        UpdateColors(startCube, cellImagesStartCube);
     }
 
-    public void UpdateColors()
+    void UpdateColors(CubeModel cube, Image[,,] cellImages)
     {
         for (var side = 0; side < cellImages.GetLength(0); side++)
             for (var row = 0; row < cellImages.GetLength(1); row++)
@@ -44,7 +52,7 @@ public class CubeVisualizer : MonoBehaviour
                             cellImages[side, row, column].color = orange;
                             break;
                         case CellColor.Red:
-                            cellImages[side, row, column].color = Color.red;
+                            cellImages[side, row, column].color = red;
                             break;
                         case CellColor.White:
                             cellImages[side, row, column].color = Color.white;
@@ -56,7 +64,7 @@ public class CubeVisualizer : MonoBehaviour
                 }
     }
 
-    public void SetImagesToCells()
+    public void SetImagesToCells(Image[,,] cellImages, Image[] imagesToGet)
     {
         var i = 0;
         for (var side = 0; side < cellImages.GetLength(0); side++)

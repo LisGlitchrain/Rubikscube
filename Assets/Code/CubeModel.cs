@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-public enum CellColor
+﻿public enum CellColor
 {
     White,
     Green,
@@ -70,27 +68,27 @@ public class CubeModel
             {
                 case RotationCells.Left:
                     RotateLeftMiddleRightSide(0);
-                    RotateOnCircleAnySideSnailClockWise(4);
+                    RotateSnailCounterClockWise(4);
                     break;
                 case RotationCells.Right:
                     RotateLeftMiddleRightSide(2);
-                    RotateOnCircleAnySideSnailClockWise(5);
+                    RotateSnailCounterClockWise(5);
                     break;
                 case RotationCells.Back:
                     RotateBackMiddleFront(0);
-                    RotateOnCircleAnySideSnailClockWise(3);
+                    RotateSnailCounterClockWise(3);
                     break;
                 case RotationCells.Front:
                     RotateBackMiddleFront(2);
-                    RotateOnCircleAnySideSnailClockWise(1);
+                    RotateSnailCounterClockWise(1);
                     break;
                 case RotationCells.Top:
                     RotateTopMiddleBottomSide(0);
-                    RotateOnCircleAnySideSnailClockWise(0);
+                    RotateSnailCounterClockWise(0);
                     break;
                 case RotationCells.Bottom:
                     RotateTopMiddleBottomSide(2);
-                    RotateOnCircleAnySideSnailClockWise(2);
+                    RotateSnailCounterClockWise(2);
                     break;
 
                 case RotationCells.MiddleParallelMe:
@@ -158,32 +156,20 @@ public class CubeModel
             cells[4, i, 2 - numberOfSide] = cells[3, 2 - numberOfSide, 2 - i];
             cells[3, 2 - numberOfSide, 2 - i] = cells[5, 2 - i, numberOfSide];
             cells[5, 2 - i, numberOfSide] = tempCell;
-
-            //cells[1, numberOfSide, i] = cells[5, 2 - i, numberOfSide];
-            //cells[5, 2 - i, numberOfSide] = cells[3, 2 - numberOfSide, 2 - i];
-
-            //cells[3, 2 - numberOfSide, 2 - i] = cells[4, i, 2 - numberOfSide];
-            //cells[4, i, 2 - numberOfSide] = tempCell;
         }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="startColumn">Column of the top left conrer of 3x3 square to rotate.</param>
-    public void RotateOnCircleAnySideSnailClockWise(int side)
+    /// <param name="side">Number of side to rotate.</param>
+    public void RotateSnailCounterClockWise(int side)
     {
         var tempCell = cells[side,0,0];
-        //Debug.Log($"Cells: {cells[side, 0, 0]} {cells[side, 0, 2]} {cells[side, 2, 2]} {cells[side, 2, 0]}");
         cells[side, 0, 0] = cells[side, 0, 2];
-        //Debug.Log($"Cells: {cells[side, 0, 0]} {cells[side, 0, 2]} {cells[side, 2, 2]} {cells[side, 2, 0]}");
         cells[side, 0, 2] = cells[side, 2, 2];
-        //Debug.Log($"Cells: {cells[side, 0, 0]} {cells[side, 0, 2]} {cells[side, 2, 2]} {cells[side, 2, 0]}");
         cells[side, 2, 2] = cells[side, 2, 0];
-        //Debug.Log($"Cells: {cells[side, 0, 0]} {cells[side, 0, 2]} {cells[side, 2, 2]} {cells[side, 2, 0]}");
         cells[side, 2, 0] = tempCell;
-        //Debug.Log($"Cells: {cells[side, 0, 0]} {cells[side, 0, 2]} {cells[side, 2, 2]} {cells[side, 2, 0]}");
-
 
         tempCell = cells[side, 0, 1];
         cells[side, 0, 1] = cells[side, 1, 2];
