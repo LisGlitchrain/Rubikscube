@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum AmountOfActions
+{
+    Minimal = 6,
+    MinimalWithClockwise = 12,
+    Minimal180and270 = 18
+}
 public class CubeAnalyzer : MonoBehaviour
 {
     public CubeVisualizer cubeVisualizer;
@@ -14,17 +20,26 @@ public class CubeAnalyzer : MonoBehaviour
     public int chaosMeasure;
     public int currentChaosMeasure;
     public int depthSearchLimit = 5;
+    public AmountOfActions actionsToUse = AmountOfActions.Minimal180and270;
+    public int currentCountOfActions;
     public Path choosenActions = new Path();
     public Path previouslyAppliedPathes = new Path();
+    public Path pathToGetStartCubeFromSolved = new Path();
     public bool search;
+    public bool fullyAutomaticSearch;
     public bool pause;
     public bool oneStep;
     public int currentDepth;
     public Text etaText;
+    int indexOfPreviouslyAppliedAction = -1;
+    public List<Action> actionsToDeleteFromPreviouslyAppliedList = new List<Action>();
     System.Random rand = new System.Random();
-
+    bool coroutineEnded = true;
+    public delegate void StartSearchAction();
+    StartSearchAction startSearchAction;
     private void Start()
     {
+        currentCountOfActions = (int)actionsToUse;
         chaosMeasure = 54;
         cube = new CubeModel();
         cube.Init();
@@ -38,6 +53,28 @@ public class CubeAnalyzer : MonoBehaviour
         solvedCube.Init();
         solvedCube.SetSolved();
         cubeVisualizer.Init(cube, startCube);
+
+        for (var colorSide = 0; colorSide < 6; colorSide++)
+            for (var row = 0; row < 3; row++)
+                for (var column = 0; column < 3; column++)
+                {
+                    var changeColorButton = cubeVisualizer.cellImagesCurrentCube[colorSide, row, column].gameObject.GetComponent<ChangeColorButton>();
+                    changeColorButton.myColorIndexSide = colorSide;
+                    changeColorButton.myRow = row;
+                    changeColorButton.myColumn = column;
+                }
+                    
+    }
+
+    public void ChangeCellColor(int sideColorIndex, int row, int column)
+    {
+        if (cube.Cells[sideColorIndex, row, column] == CellColor.Red) cube.Cells[sideColorIndex, row, column] = CellColor.White;
+        else
+        {
+            var nextColor = (int)cube.Cells[sideColorIndex, row, column];
+            nextColor++;
+            cube.Cells[sideColorIndex, row, column] = (CellColor) nextColor;
+        }
     }
 
     #region For tests
@@ -57,11 +94,24 @@ public class CubeAnalyzer : MonoBehaviour
     //}
     #endregion
 
+    public void Update()
+    {
+        startSearchAction?.Invoke();
+    }
 
-    public void SetCurrentCubeAsStartCube()
+    public void SetCurrentCubeCellsToStartCube()
     {
         startCube.SetCells(cube.Cells);
+        pathToGetStartCubeFromSolved = new Path(previouslyAppliedPathes);
         previouslyAppliedPathes.actions.Clear();
+        actionsToDeleteFromPreviouslyAppliedList.Clear();
+    }
+
+    public void SetStartCubeCellsToCurrentCube()
+    {
+        cube.SetCells(startCube.Cells);
+        previouslyAppliedPathes.actions.Clear();
+        actionsToDeleteFromPreviouslyAppliedList.Clear();
     }
 
     public void RotateAny(RotationCells rotationCells, int rightAngleCount = 1)
@@ -85,31 +135,44 @@ public class CubeAnalyzer : MonoBehaviour
     public void StartSearch()
     {
         search = true;
+        if (MeasureChaos(cube) == 0)
+        {
+            startSearchAction = null;
+            return;
+        }
         choosenActions.actions.Clear();
-        StartCoroutine(FindPathToDecreaseChaose(cube));
+        if (coroutineEnded) StartCoroutine(FindPathToDecreaseChaose(cube));
+        if (fullyAutomaticSearch) startSearchAction = StartSearch;
     }
+
 
     //Now it trying to find solution and accept only full solution.
     //Maybe it's good idea to trying to decrease chaose measure. And start from point with less chaos  
 
+
     IEnumerator FindPathToDecreaseChaose(CubeModel cube)
     {
+        coroutineEnded = false;
+        foreach (var actionToDelete in actionsToDeleteFromPreviouslyAppliedList)
+            previouslyAppliedPathes.actions.Remove(actionToDelete);
+        indexOfPreviouslyAppliedAction = -100;
         var start = DateTime.Now;
         currentDepth = 0;
         var success = false;
         var actionPaths = new List<Path>();
+        currentCountOfActions = (int) actionsToUse;
         FillUpPathsListWithFirst9Actions(actionPaths);
         var startChaosMeasure = MeasureChaos(cube);
         var currentPathCount = 0;
         var totalPathCountsForIteratingDeepSearch = 0;
         for (var i = 1; i <= depthSearchLimit; i++)
-            totalPathCountsForIteratingDeepSearch += (int)Mathf.Pow(18, i);
-
+            totalPathCountsForIteratingDeepSearch += (int)Mathf.Pow(currentCountOfActions, i);
+        print($"Total path count: {totalPathCountsForIteratingDeepSearch}");
         while (search && MeasureChaos(cube) > 0 && currentDepth < depthSearchLimit)
         {
             if(!pause)
             {
-                for(var  i = 0; i < Mathf.Pow(18, currentDepth + 1); i++)
+                for(var  i = 0; i < Mathf.Pow(currentCountOfActions, currentDepth + 1); i++)
                 {
                     if (!success)
                     {
@@ -125,7 +188,7 @@ public class CubeAnalyzer : MonoBehaviour
                             break;
                         }
                         //print($"Chaos: {actionPaths[i].actions[actionPaths[i].actions.Count - 1].ChaosMeasureOfAppliedRotation}");
-                        for (var j = 0; j < 27; j++)
+                        for (var j = 0; j < currentCountOfActions; j++)
                         {
                             //print($"Path {i} Trying action: {j} ( {GetActionByIndex(j).Rotation}, {GetActionByIndex(j).RightAngleCount} ) pathCount: {actionPaths.Count}");
                             var currentAction = GetActionByIndex(j);
@@ -165,7 +228,12 @@ public class CubeAnalyzer : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
         print($"Elapsed: {(DateTime.Now - start).TotalSeconds}");
-        if (success) print("<color=green> SOLUTION IS FOUNDED!</color>");
+        if (success)
+        {
+            print("<color=green> SOLUTION IS FOUNDED!</color>");
+            foreach (var action in choosenActions.actions)
+                previouslyAppliedPathes.actions.Add(action);
+        }
         else
         {
             print("<color=red> SOLUTION WAS NOT FOUND!</color>");
@@ -179,8 +247,11 @@ public class CubeAnalyzer : MonoBehaviour
             }
             else print("<color=red> BEST PATH WAS NOT FOUND!</color>");
         }
+        indexOfPreviouslyAppliedAction = previouslyAppliedPathes.actions.Count - 1;
+        coroutineEnded = true;
     }
 
+    //Need to filtrate 360degrees actions!
     Path FindAndAddPathWithTheLowestChaos(List<Path> pathes)
     {
         if (pathes.Count < 1) return new Path();
@@ -205,16 +276,17 @@ public class CubeAnalyzer : MonoBehaviour
             //print($"Analyzed path: {i}. Lowest chaos:  {pathLowestChaos}");
         }
         //print($"Best path index: {currentLowestPath}");
-        if (lowestChaos >= chaosMeasure) return new Path();
+        if (lowestChaos >= chaosMeasure && !fullyAutomaticSearch) return new Path();
         return new Path(pathes[currentLowestPath].CloneActions(numberOfCurrentLowestAction));
     }
 
+    //need to exclude 360 actions!
     void ExtendPathes(List<Path> pathes)
     {
         var startPathCount = pathes.Count;
         for(var i = 0; i < startPathCount; i++)
         {
-            for(var j = 0; j < 18; j++)
+            for(var j = 0; j < currentCountOfActions; j++)
             {
                 if (j == 0)
                 {
@@ -240,7 +312,7 @@ public class CubeAnalyzer : MonoBehaviour
 
     void FillUpPathsListWithFirst9Actions(List<Path> listToFil)
     {
-        for (var i = 0; i < 18; i++)
+        for (var i = 0; i < currentCountOfActions; i++)
         {
             var firstAction = GetActionByIndex(i);
             var firstActionList = new Path(firstAction);
@@ -286,6 +358,20 @@ public class CubeAnalyzer : MonoBehaviour
 
     Action GetActionByIndex(int actionIndex)
     {
+        switch(actionsToUse)
+        {
+            case AmountOfActions.Minimal:
+                return GetActionFromReducedTo6(actionIndex);
+            case AmountOfActions.MinimalWithClockwise:
+                return GetActionFromRedeucedTo12(actionIndex);
+            case AmountOfActions.Minimal180and270:
+                return GetfActionFromReducedTo18(actionIndex);
+        }
+        return new Action(RotationCells.Left, 0);
+    }
+
+    Action GetfActionFromReducedTo18(int actionIndex)
+    {
         if (actionIndex == 0) return new Action(RotationCells.Left, 1);
         else if (actionIndex == 1) return new Action(RotationCells.Left, 2);
         else if (actionIndex == 2) return new Action(RotationCells.Left, 3);
@@ -316,9 +402,59 @@ public class CubeAnalyzer : MonoBehaviour
         return new Action(RotationCells.Left, 0);
     }
 
+    Action GetActionFromReducedTo6(int actionIndex)
+    {
+        if (actionIndex == 0) return new Action(RotationCells.Left, 1);
+        else if (actionIndex == 1) return new Action(RotationCells.Right, 1);
+        else if (actionIndex == 2) return new Action(RotationCells.Back, 1);
+        else if (actionIndex == 3) return new Action(RotationCells.Front, 1);
+        else if (actionIndex == 4) return new Action(RotationCells.Top, 1);
+        else if (actionIndex == 5) return new Action(RotationCells.Bottom, 1);
+        return new Action(RotationCells.Left, 0);
+    }
+
+    Action GetActionFromRedeucedTo12(int actionIndex)
+    {
+        if (actionIndex == 0) return new Action(RotationCells.Left, 1);
+        else if (actionIndex == 1) return new Action(RotationCells.Left, 3);
+        else if (actionIndex == 2) return new Action(RotationCells.Right, 1);
+        else if (actionIndex == 3) return new Action(RotationCells.Right, 3);
+        else if (actionIndex == 4) return new Action(RotationCells.Back, 1);
+        else if (actionIndex == 5) return new Action(RotationCells.Back, 3);
+        else if (actionIndex == 6) return new Action(RotationCells.Front, 1);
+        else if (actionIndex == 7) return new Action(RotationCells.Front, 3);
+        else if (actionIndex == 8) return new Action(RotationCells.Top, 1);
+        else if (actionIndex == 9) return new Action(RotationCells.Top, 3);
+        else if (actionIndex == 10) return new Action(RotationCells.Bottom, 1);
+        else if (actionIndex == 11) return new Action(RotationCells.Bottom, 3);
+        return new Action(RotationCells.Left, 0);
+    }
+
     (RotationCells, int) GetRandomAction()
     {
         return ((RotationCells)rand.Next(0, 9), rand.Next(1, 4));
+    }
+
+    public void RevertPreviouslyAppliedAction()
+    {
+        if (indexOfPreviouslyAppliedAction < 0) return;
+        if (indexOfPreviouslyAppliedAction > previouslyAppliedPathes.actions.Count) return;
+        if (indexOfPreviouslyAppliedAction == previouslyAppliedPathes.actions.Count) indexOfPreviouslyAppliedAction = previouslyAppliedPathes.actions.Count - 1;
+        RevertAction(cube, previouslyAppliedPathes.actions[indexOfPreviouslyAppliedAction]);
+        actionsToDeleteFromPreviouslyAppliedList.Add(previouslyAppliedPathes.actions[indexOfPreviouslyAppliedAction]);
+        indexOfPreviouslyAppliedAction--;
+        chaosMeasure = MeasureChaos(cube);
+    }
+
+    public void ApplyPreviouslyRevertedAction()
+    {
+        if (indexOfPreviouslyAppliedAction < -1) return;
+        if (indexOfPreviouslyAppliedAction > previouslyAppliedPathes.actions.Count - 1) return;
+        if (indexOfPreviouslyAppliedAction == -1) indexOfPreviouslyAppliedAction = 0;
+        cube.Rotate(previouslyAppliedPathes.actions[indexOfPreviouslyAppliedAction].Rotation, previouslyAppliedPathes.actions[indexOfPreviouslyAppliedAction].RightAngleCount);
+        actionsToDeleteFromPreviouslyAppliedList.Remove(previouslyAppliedPathes.actions[indexOfPreviouslyAppliedAction]);
+        indexOfPreviouslyAppliedAction++;
+        chaosMeasure = MeasureChaos(cube);
     }
 
     void RevertAction(CubeModel cube, Action currentAction)
