@@ -50,7 +50,7 @@ public class CubeAnalyzerCE : Editor
         GUILayout.Space(20);
         GUILayout.Space(20);
         if (GUILayout.Button("Start")) targetScript.StartSearch();
-        if (GUILayout.Button("Stop")) targetScript.search = false;
+        if (GUILayout.Button("Stop")) targetScript.StopSearch();
         if (GUILayout.Button("Pause")) targetScript.pause = true;
         if (GUILayout.Button("Resume")) targetScript.pause = false;
         if (GUILayout.Button("Step")) targetScript.oneStep = true;

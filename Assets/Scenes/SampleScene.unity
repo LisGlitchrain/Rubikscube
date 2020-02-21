@@ -9664,11 +9664,11 @@ MonoBehaviour:
   cubeVisualizer: {fileID: 1385454682}
   chaosMeasure: 54
   currentChaosMeasure: 0
-  depthSearchLimit: 2
-  actionsToUse: 18
+  depthSearchLimit: 3
+  setOfActions: 18
   currentCountOfActions: 0
   search: 1
-  fullyAutomaticSearch: 0
+  fullyAutomaticSearch: 1
   pause: 0
   oneStep: 0
   currentDepth: 0
