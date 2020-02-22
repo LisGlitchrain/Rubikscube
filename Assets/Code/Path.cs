@@ -34,7 +34,7 @@ public class Path
         for(var i = 0; i <= maxIndexIncluded; i++)
         {
             list.Add(actions[i].CloneMe());
-            Debug.Log($"Path cloning index: {i}/ {maxIndexIncluded}");
+            //Debug.Log($"Path cloning index: {i}/ {maxIndexIncluded}");
         }
         return list;
     }

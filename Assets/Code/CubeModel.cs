@@ -67,38 +67,38 @@ public class CubeModel
             switch (rotationCells)
             {
                 case RotationCells.Left:
-                    RotateLeftMiddleRightSide(0);
+                    RotateLeftSide();
                     RotateSnailCounterClockWise(4);
                     break;
                 case RotationCells.Right:
-                    RotateLeftMiddleRightSide(2);
+                    RotateRightSide();
                     RotateSnailCounterClockWise(5);
                     break;
                 case RotationCells.Back:
-                    RotateBackMiddleFront(0);
+                    RotateBack();
                     RotateSnailCounterClockWise(3);
                     break;
                 case RotationCells.Front:
-                    RotateBackMiddleFront(2);
+                    RotateFront();
                     RotateSnailCounterClockWise(1);
                     break;
                 case RotationCells.Top:
-                    RotateTopMiddleBottomSide(0);
+                    RotateTop();
                     RotateSnailCounterClockWise(0);
                     break;
                 case RotationCells.Bottom:
-                    RotateTopMiddleBottomSide(2);
+                    RotateBottom();
                     RotateSnailCounterClockWise(2);
                     break;
 
                 case RotationCells.MiddleParallelMe:
-                    RotateBackMiddleFront(1);
+                    //RotateBackMiddleFront(1);
                     break;
                 case RotationCells.MiddleParralelSide:
-                    RotateLeftMiddleRightSide(1);
+                    //RotateLeftMiddleRightSide(1);
                     break;
                 case RotationCells.MiddleParrallelFloor:
-                    RotateTopMiddleBottomSide(1);
+                    //RotateTopMiddleBottomSide(1);
                     break;
             }
         }
@@ -107,18 +107,34 @@ public class CubeModel
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="numberOfSide">0 is left side, 1 is middle side, 2 is right side.</param>
-    public void RotateLeftMiddleRightSide(int numberOfSide)
+    /// <param name="numberOfSide">0 is left side, 1 is middle side,</param>
+    public void RotateLeftSide()
     {
-        if (numberOfSide < 0 || numberOfSide > 3) return;
         CellColor tempCell;
         for(var i = 0; i < 3; i++)
         {
-            tempCell = cells[0, i, numberOfSide];
-            cells[0, i, numberOfSide] = cells[1, i, numberOfSide];
-            cells[1, i, numberOfSide] = cells[2, i, numberOfSide];
-            cells[2, i, numberOfSide] = cells[3, i, numberOfSide];
-            cells[3, i, numberOfSide] = tempCell;
+            tempCell = cells[0, i, 0];
+            cells[0, i, 0] = cells[1, i, 0];
+            cells[1, i, 0] = cells[2, i, 0];
+            cells[2, i, 0] = cells[3, i, 0];
+            cells[3, i, 0] = tempCell;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="numberOfSide">0 is left side, 1 is middle side, 2 is right side.</param>
+    public void RotateRightSide()
+    {
+        CellColor tempCell;
+        for (var i = 0; i < 3; i++)
+        {
+            tempCell = cells[3, i, 2];
+            cells[3, i, 2] = cells[2, i, 2];
+            cells[2, i, 2] = cells[1, i, 2];
+            cells[1, i, 2] = cells[0, i, 2];
+            cells[0, i, 2] = tempCell;
         }
     }
 
@@ -126,18 +142,34 @@ public class CubeModel
     /// 
     /// </summary>
     /// <param name="numberOfSide"> 0 is back side, 1 is middle side, 2 is front side.</param>
-    public void RotateBackMiddleFront(int numberOfSide)
+    public void RotateBack()
     {
-        if (numberOfSide < 0 || numberOfSide > 3) return;
         CellColor tempCell;
         for(var i = 0; i < 3; i ++)
         {
-            tempCell = cells[0, numberOfSide, i];
-            cells[0, numberOfSide, i] = cells[5, numberOfSide, i];
-            cells[5, numberOfSide, i] = cells[2, 2 - numberOfSide, 2 - i];
+            tempCell = cells[0, 0, i];
+            cells[0, 0, i] = cells[4, 0, i];
+            cells[4, 0, i] = cells[2, 2, 2 - i];
 
-            cells[2, 2 - numberOfSide, 2 - i] = cells[4, numberOfSide, i];
-            cells[4, numberOfSide, i] = tempCell;
+            cells[2, 2 - 0, 2 - i] = cells[5, 0, i];
+            cells[5, 0, i] = tempCell;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="numberOfSide"> 0 is back side, 1 is middle side, 2 is front side.</param>
+    public void RotateFront()
+    {
+        for (var i = 0; i < 3; i++)
+        {
+            var tempCell = cells[0, 2, i];
+            cells[0, 2, i] = cells[5, 2, i];
+            cells[5, 2, i] = cells[2, 2 - 2, 2 - i];
+
+            cells[2, 2 - 2, 2 - i] = cells[4, 2, i];
+            cells[4, 2, i] = tempCell;
         }
     }
 
@@ -145,19 +177,37 @@ public class CubeModel
     /// 
     /// </summary>
     /// <param name="numberOfSide"> 0 is top side, 1 is middle side, 2 is bottom side.</param>
-    public void RotateTopMiddleBottomSide(int numberOfSide)
+    public void RotateTop()
     {
-        if (numberOfSide < 0 || numberOfSide > 3) return;
         CellColor tempCell;
         for (var i = 0; i < 3; i++)
         {
-            tempCell = cells[1, numberOfSide, i];
-            cells[1, numberOfSide, i] = cells[4, i, 2 - numberOfSide];
-            cells[4, i, 2 - numberOfSide] = cells[3, 2 - numberOfSide, 2 - i];
-            cells[3, 2 - numberOfSide, 2 - i] = cells[5, 2 - i, numberOfSide];
-            cells[5, 2 - i, numberOfSide] = tempCell;
+            tempCell = cells[1, 0, i];
+            cells[1, 0, i] = cells[4, i, 2];
+            cells[4, i, 2] = cells[3, 2, 2 - i];
+            cells[3, 2, 2 - i] = cells[5, 2 - i, 0];
+            cells[5, 2 - i, 0] = tempCell;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="numberOfSide"> 0 is top side, 1 is middle side, 2 is bottom side.</param>
+    public void RotateBottom()
+    {
+        CellColor tempCell;
+        for (var i = 0; i < 3; i++)
+        {
+            tempCell = cells[5, 2 - i, 2];
+            cells[5, 2 - i, 2] = cells[3, 2 - 2, 2 - i];
+            cells[3, 2 - 2, 2 - i] = cells[4, i, 2 - 2];
+            cells[4, i, 2 - 2] = cells[1, 2, i];
+            cells[1, 2, i] = tempCell;
+
+        }
+    }
+
 
     /// <summary>
     /// 
